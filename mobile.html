@@ -1,0 +1,354 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GBA模拟器-mobile(edit@missbluee)</title>
+    <style>
+        .no-select {
+          -webkit-user-select: none; /* Safari */
+          -moz-user-select: none; /* Firefox */
+          -ms-user-select: none; /* IE/Edge */
+          user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+    <link rel="stylesheet" href="resources/main-mobile.css">
+    <script src="js/util.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/arm.js"></script>
+    <script src="js/thumb.js"></script>
+    <script src="js/mmu.js"></script>
+    <script src="js/io.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/video.js"></script>
+    <script src="js/video/proxy.js"></script>
+    <script src="js/video/software.js"></script>
+    <script src="js/irq.js"></script>
+    <script src="js/keypad.js"></script>
+    <script src="js/savedata.js"></script>
+    <script src="js/gpio.js"></script>
+    <script src="js/gba.js"></script>
+    <script src="resources/xhr.js"></script>
+
+    <script>
+        var gba;
+        var runCommands = [];
+
+        try {
+            gba = new GameBoyAdvance();
+            gba.keypad.eatInput = true;
+            gba.setLogger(function (error) {
+                console.log(error);
+                gba.pause();
+                var screen = document.getElementById('screen');
+                if (screen.getAttribute('class') == 'dead') {
+                    console.log('We appear to have crashed multiple times without reseting.');
+                    return;
+                }
+                var crash = document.createElement('img');
+                crash.setAttribute('id', 'crash');
+                crash.setAttribute('src', 'resources/crash.png');
+                screen.parentElement.insertBefore(crash, screen);
+                screen.setAttribute('class', 'dead');
+            });
+        } catch (exception) {
+            gba = null;
+        }
+
+        window.onload = function () {
+            if (gba && FileReader) {
+                var canvas = document.getElementById('screen');
+                gba.setCanvas(canvas);
+
+                gba.logLevel = gba.LOG_ERROR;
+                gba.reportFPS = function (fps) {
+                    var counter = document.getElementById('fps');
+                    counter.textContent = Math.floor(fps);
+                };
+
+                loadRom('resources/bios.bin', function (bios) {
+                    gba.setBios(bios);
+                });
+
+                if (!gba.audio.context) {
+                    // Remove the sound box if sound isn't available
+                    var soundbox = document.getElementById('sound');
+                    soundbox.parentElement.removeChild(soundbox);
+                }
+
+                if (window.navigator.appName == 'Microsoft Internet Explorer') {
+                    // Remove the pixelated option if it doesn't work
+                    var pixelatedBox = document.getElementById('pixelated');
+                    pixelatedBox.parentElement.removeChild(pixelatedBox);
+                }
+            } else {
+                var dead = document.getElementById('controls');
+                dead.parentElement.removeChild(dead);
+                dead = document.getElementById('instructions');
+                dead.textContent = [
+                    'Your browser does not appear to be supported. Is it out of date? ',
+                    'Safari 5.1 does not contain the functionality needed for loading the ',
+                    'game from your hard drive, and as such is unsupported. ',
+                    'Likewise, Firefox 14 and below do not contain the functionality used ',
+                    'for memory. Firefox 15 is now out, which supports this functionality.',
+                    'However, using Safari or Chrome is highly recommended, and are required ',
+                    'for sound support.'
+                ].join(' ');
+            }
+        }
+
+        function fadeOut(id, nextId, kill) {
+            var e = document.getElementById(id);
+            var e2 = document.getElementById(nextId);
+            if (!e) {
+                return;
+            }
+            var removeSelf = function () {
+                if (kill) {
+                    e.parentElement.removeChild(e);
+                } else {
+                    e.setAttribute('class', 'dead');
+                    e.removeEventListener('webkitTransitionEnd', removeSelf);
+                    e.removeEventListener('oTransitionEnd', removeSelf);
+                    e.removeEventListener('transitionend', removeSelf);
+                }
+                if (e2) {
+                    e2.setAttribute('class', 'hidden');
+                    setTimeout(function () {
+                        e2.removeAttribute('class');
+                    }, 0);
+                }
+            }
+
+            e.addEventListener('webkitTransitionEnd', removeSelf, false);
+            e.addEventListener('oTransitionEnd', removeSelf, false);
+            e.addEventListener('transitionend', removeSelf, false);
+            e.setAttribute('class', 'hidden');
+        }
+
+        function run(file) {
+            var dead = document.getElementById('loader');
+            dead.value = '';
+            var load = document.getElementById('select');
+            load.textContent = '游戏运行中...';
+            load.removeAttribute('onclick');
+            var pause = document.getElementById('pause');
+            pause.textContent = "暂停";
+            gba.loadRomFromFile(file, function (result) {
+                if (result) {
+                    for (var i = 0; i < runCommands.length; ++i) {
+                        runCommands[i]();
+                    }
+                    runCommands = [];
+                    fadeOut('preload', 'ingame');
+                    fadeOut('instructions', null, true);
+                    gba.runStable();
+                } else {
+                    load.textContent = '无效文件';
+                    setTimeout(function () {
+                        load.textContent = 'SELECT';
+                        load.onclick = function () {
+                            document.getElementById('loader').click();
+                        }
+                    }, 3000);
+                }
+            });
+        }
+
+        function reset() {
+            gba.pause();
+            gba.reset();
+            var load = document.getElementById('select');
+            load.textContent = 'SELECT';
+            var crash = document.getElementById('crash');
+            if (crash) {
+                var context = gba.targetCanvas.getContext('2d');
+                context.clearRect(0, 0, 480, 320);
+                gba.video.drawCallback();
+                crash.parentElement.removeChild(crash);
+                var canvas = document.getElementById('screen');
+                canvas.removeAttribute('class');
+            } else {
+                lcdFade(gba.context, gba.targetCanvas.getContext('2d'), gba.video.drawCallback);
+            }
+            load.onclick = function () {
+                document.getElementById('loader').click();
+            }
+            fadeOut('ingame', 'preload');
+        }
+
+        function uploadSavedataPending(file) {
+            runCommands.push(function () { gba.loadSavedataFromFile(file) });
+        }
+
+        function togglePause() {
+            var e = document.getElementById('pause');
+            if (gba.paused) {
+                gba.runStable();
+                e.textContent = "PAUSE";
+            } else {
+                gba.pause();
+                e.textContent = "UNPAUSE";
+            }
+        }
+
+        function screenshot() {
+            var canvas = gba.indirectCanvas;
+            window.open(canvas.toDataURL('image/png'), 'screenshot');
+        }
+
+        function lcdFade(context, target, callback) {
+            var i = 0;
+            var drawInterval = setInterval(function () {
+                i++;
+                var pixelData = context.getImageData(0, 0, 240, 160);
+                for (var y = 0; y < 160; ++y) {
+                    for (var x = 0; x < 240; ++x) {
+                        var xDiff = Math.abs(x - 120);
+                        var yDiff = Math.abs(y - 80) * 0.8;
+                        var xFactor = (120 - i - xDiff) / 120;
+                        var yFactor = (80 - i - ((y & 1) * 10) - yDiff + Math.pow(xDiff, 1 / 2)) / 80;
+                        pixelData.data[(x + y * 240) * 4 + 3] *= Math.pow(xFactor, 1 / 3) * Math.pow(yFactor, 1 / 2);
+                    }
+                }
+                context.putImageData(pixelData, 0, 0);
+                target.clearRect(0, 0, 480, 320);
+                if (i > 40) {
+                    clearInterval(drawInterval);
+                } else {
+                    callback();
+                }
+            }, 50);
+        }
+
+        function setVolume(value) {
+            gba.audio.masterVolume = Math.pow(2, value) - 1;
+        }
+
+        function setPixelated(pixelated) {
+            var screen = document.getElementById('screen');
+            var context = screen.getContext('2d');
+            if (context.webkitImageSmoothingEnabled) {
+                context.webkitImageSmoothingEnabled = !pixelated;
+            } else if (context.mozImageSmoothingEnabled) {
+                context.mozImageSmoothingEnabled = !pixelated;
+            } else if (window.navigator.appName != 'Microsoft Internet Explorer') {
+                if (pixelated) {
+                    screen.setAttribute('width', '240');
+                    screen.setAttribute('height', '160');
+                } else {
+                    screen.setAttribute('width', '480');
+                    screen.setAttribute('height', '320');
+                }
+                if (window.navigator.appName == 'Opera') {
+                    // Ugly hack! Ew!
+                    if (pixelated) {
+                        screen.style.marginTop = '0';
+                        screen.style.marginBottom = '-325px';
+                    } else {
+                        delete screen.style;
+                    }
+                }
+            }
+        }
+        
+        function hiddenMenu(){
+            document.getElementById("preload").style.visibility = "hidden";
+            document.getElementById("ingame").style.visibility = "hidden";
+            document.getElementById("controls-btn").style.display = "flex";
+        }
+        
+        function showMenu(){
+            document.getElementById("preload").style.visibility = "visible";
+            document.getElementById("ingame").style.visibility = "visible";
+            document.getElementById("controls-btn").style.display = "none";
+        }
+        
+        document.addEventListener('webkitfullscreenchange', function () {
+            var canvas = document.getElementById('screen');
+            if (document.webkitIsFullScreen) {
+                canvas.setAttribute('height', document.body.offsetHeight);
+                canvas.setAttribute('width', document.body.offsetHeight / 2 * 3);
+                canvas.setAttribute('style', 'margin: 0');
+            } else {
+                canvas.setAttribute('height', 320);
+                canvas.setAttribute('width', 480);
+                canvas.removeAttribute('style');
+            }
+        }, false);
+        
+        document.addEventListener('dblclick', function(event) {
+          event.preventDefault();
+        }, false);
+        
+        document.addEventListener("gesturestart", function (event) {
+        	event.preventDefault();
+        }, false);
+        
+        document.addEventListener('contextmenu', function(e){
+            e.preventDefault();
+        }, false);
+
+        
+        
+    </script>
+</head>
+
+<body class="no-select">
+    <canvas id="screen" width="414" height="320"></canvas>
+    <section id="controls" >
+        <div id="preload">
+            <div class="preload-child">
+                <button class="bigbutton" id="select"
+                    onclick="document.getElementById('loader').click()">选择游戏</button>
+                <input id="loader" type="file" accept=".gba" onchange="run(this.files[0]);">
+            </div>
+            <div class="preload-child">
+                <button onclick="document.getElementById('saveloader').click()" class="upload-save-btn">上传存档</button>
+                <input id="saveloader" type="file" onchange="uploadSavedataPending(this.files[0]);">
+            </div>
+        </div>
+        <div id="ingame" class="hidden">
+            <button id="pause" class="bigbutton menu-style" onclick="togglePause()">暂停</button>
+            <button class="bigbutton menu-style" onclick="reset()" >重置</button>
+            <button onclick="gba.downloadSavedata()" class="menu-style">下载存档</button>
+            <button onclick="screenshot()" class="menu-style">截屏</button>
+            <button onclick="hiddenMenu()" class="menu-style">显示键盘</button>
+            <label id="pixelated"><input type="checkbox" onchange="setPixelated(this.checked)"> Pixelated</label>
+            <div id="sound" class="sound">
+                <p>声音</p>
+                <input type="checkbox" checked onchange="gba.audio.masterEnable = this.checked">
+                <input type="range" min="0" max="1" value="1" step="any" onchange="setVolume(this.value)"
+                    oninput="setVolume(this.value)">
+            </div>
+        </div>
+    </section>
+    <p class="no-select"><span id="fps" class="no-select">0</span> frames per second</p>
+    <div id="controls-btn">
+        <div class="lr-btn-wrap">
+            <button class="rl-btn no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:65,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:65,type:'keyup'})">L</button>
+            <button class="rl-btn no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:83,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:83,type:'keyup'})">R</button>
+        </div>
+        <div class="action-btns">
+            <div class="move-btn">
+                <div class="move-btn-wrap">
+                    <button id="move-left" class="move-btn-item move-left no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:37,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:37,type:'keyup'})">←</button>
+                <button id="move-up" class="move-btn-item move-top no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:38,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:38,type:'keyup'})">↑</button>
+                <button id="move-right" class="move-btn-item move-right no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:39,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:39,type:'keyup'})">→</button>
+                <button id="move-down" class="move-btn-item move-bottom no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:40,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:40,type:'keyup'})">↓</button>
+                </div>
+            </div>
+            <div class="confirm-btn" >
+                <button class="confirm-btn-a no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:90,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:90,type:'keyup'})">A</button>
+                <button class="confirm-btn-b no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:88,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:88,type:'keyup'})">B</button>
+            </div>
+        </div>
+        <div class="select-btn-wrap">
+            <button class="select-btn no-select" ontouchstart="gba.keypad.keyboardHandler({keyCode:13,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:13,type:'keyup'})">start</button>
+            <button class="select-btn no-select"  ontouchstart="gba.keypad.keyboardHandler({keyCode:220,type:'keydown'})"  ontouchend="gba.keypad.keyboardHandler({keyCode:220,type:'keyup'})">select</button>
+            <button class="select-btn no-select" onclick="showMenu()" >显示菜单</button>
+        </div>
+    </div>
+</body>
+</html>

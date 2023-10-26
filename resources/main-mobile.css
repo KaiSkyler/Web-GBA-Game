@@ -1,0 +1,454 @@
+body {
+	background: url('bg2.png') no-repeat top center, #765490;
+	text-align: center;
+	margin: 0;
+	color: white;
+	font-family: 'Calibri', 'Verdana', sans-serif;
+	overflow: hidden;
+	font-size: 15px;
+	height: 100%;
+}
+
+button {
+	font-family: 'Calibri', 'Verdana', sans-serif;
+}
+
+#ingame{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content:center;
+    align-item:center;
+    margin-top:10px;
+}
+
+#preload{
+    display: flex; 
+    flex-direction: row; 
+    padding-top:500px;
+}
+
+.preload-child{
+    width:50% !important;
+    display:flex;
+    justify-content:center;
+}
+
+#controls * {
+    /*width: 100%;*/
+	-webkit-font-smoothing: antialiased; /* I'm so sorry */
+}
+
+#screen {
+	margin-top: 85px;
+	margin-bottom: -405px; /* Take up no height */
+}
+
+#screen[width="240"] {
+	margin-top: 42.5px;
+	margin-bottom: -363px; /* Take up no height */
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -o-crisp-edges;
+	zoom: 2;
+	-o-transform: scale(2);
+}
+
+#crash {
+	margin-top: 100px;
+	margin-bottom: -356px;
+}
+
+p:first-child {
+	margin-top: 0;
+}
+
+a:link, a:visited {
+	color: #fcb3f0;
+}
+
+#pixelated{
+    margin: 0px;font-size: 15px;display:none !important;
+}
+
+#controls {
+	margin-top: 60px;
+	/*margin-right: 50%;*/
+	height: 0;
+}
+
+#controls > *, #instructions {
+	opacity: 1;
+	-webkit-transition: opacity ease-out 0.6s;
+	-moz-transition: opacity ease-out 0.6s;
+	-o-transition: opacity ease-out 0.6s;
+	transition: opacity ease-out 0.6s;
+}
+
+#controls button, #mapping td, #sound, #controls label {
+	background: transparent;
+	border: 0px solid rgba(192, 128, 192, 0.5);
+	border-top: 2px solid rgba(96, 48, 96, 0.8);
+	border-bottom: 2px solid rgba(255, 200, 255, 0.5);
+	border-radius: 30px;
+	color: white;
+	font-weight: bold;
+	display: block;
+	/*padding: 6px 15px;
+	margin-right: 330px;
+	margin-left: auto;
+	margin-top: 20px;*/
+	/*font-size: 20px;*/
+	text-shadow: 0 2px rgba(96, 48, 96, 0.8), 0 -1px rgba(255, 200, 255, 0.5);
+}
+
+.sound{
+    margin: 0px;font-size: 15px;display:none !important;
+}
+
+#controls .bigbutton, #mapping td {
+	font-size: 30px;
+	padding: 8px 25px;
+}
+
+#controls-btn{
+    flex-direction:column;width:100%;display:none;margin-top:350px;
+}
+
+#moreinfo {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 0px;
+	bottom: 0px;
+	overflow: hidden;
+	padding: 10px 15px;
+	background: -webkit-linear-gradient(left, rgba(0, 0, 0, 0.5) 0, rgba(0, 0, 0, 0.2) 12px, rgba(0, 0, 0, 0) 20px), #452e5c;
+	background: -moz-linear-gradient(left, rgba(0, 0, 0, 0.5) 0, rgba(0, 0, 0, 0.2) 12px, rgba(0, 0, 0, 0) 20px), #452e5c;
+	background: -ms-linear-gradient(left, rgba(0, 0, 0, 0.5) 0, rgba(0, 0, 0, 0.2) 12px, rgba(0, 0, 0, 0) 20px), #452e5c;
+	background: -o-linear-gradient(left, rgba(0, 0, 0, 0.5) 0, rgba(0, 0, 0, 0.2) 12px, rgba(0, 0, 0, 0) 20px), #452e5c;
+	-webkit-transition: width ease-out 0.5s, padding ease-out 0.5s;
+	-moz-transition: width ease-out 0.5s, padding ease-out 0.5s;
+	-o-transition: width ease-out 0.5s, padding ease-out 0.5s;
+	transition: width ease-out 0.5s, padding ease-out 0.5s;
+	z-index: 15;
+}
+
+#moreinfo:hover {
+	width: 500px;
+	padding: 10px 10px;
+}
+
+#moreinfo > * {
+	width: 480px;
+}
+
+#rollover {
+	position: absolute;
+	z-index: 20;
+	top: 15%;
+	right: -1px;
+	width: 6em;
+	padding: 5px;
+	background: #765490;
+	box-shadow: 0 2px 5px -2px rgba(0, 0, 0, 0.6) inset, -4px -1px 5px -3px black;
+	border-radius: 5px 5px 0 0;
+	border: 1px solid rgba(0, 0, 0, 0.3);
+	-webkit-transform-origin: 100% 100%;
+	-webkit-transform: rotate(-90deg);
+	-webkit-transition: right ease-out 0.5s;
+	-moz-transform-origin: 100% 100%;
+	-moz-transform: rotate(-90deg);
+	-moz-transition: right ease-out 0.5s;
+	-o-transform-origin: 100% 100%;
+	-o-transform: rotate(-90deg);
+	-o-transition: right ease-out 0.5s;
+	transform-origin: 100% 100%;
+	transform: rotate(-90deg);
+	transition: right ease-out 0.5s;
+}
+
+.hidden {
+	opacity: 0 !important;
+}
+
+.dead {
+	display: none;
+}
+
+input[type=file] {
+	opacity: 0 !important;
+	width: 0;
+	height: 0;
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+#moreinfo:hover #rollover {
+	right: -2em;
+}
+
+h1 {
+	font-size: 40px;
+	margin-bottom: 10px;
+	margin-top: 0;
+}
+
+h2 {
+	font-size: 18px;
+	font-weight: normal;
+	font-style: italic;
+}
+
+footer {
+	font-size: 12px;
+	padding-top: 8px;
+}
+
+p {
+	margin-top: 0px;
+}
+
+ul#links {
+	display: block;
+	text-align: center;
+	padding: 0;
+}
+
+ul#links li {
+	display: inline;
+	list-style-type: none;
+}
+
+ul#links li:not(:first-child)::before {
+	content: "•";
+	margin: 0 0.5em;
+}
+
+#stats {
+	text-align: right;
+	font-size: 12px;
+}
+
+#moreinfo header {
+	background-color: #27282A;
+	margin: 20px 0 0 20px;
+	padding: 20px 30px;
+	border-radius: 10% 10% 50% 50% / 20% 20% 30% 30%;
+	border-bottom: 6px solid #D3B2D9;
+	border-top: 6px solid rgba(20, 22, 24, 0.5);
+	text-shadow: 0 3px rgba(0, 0, 0, 0.8);
+	position: relative;
+	z-index: 10;
+	width: 400px;
+	height: 13em;
+	position: absolute;
+	top: 0px;
+}
+
+#moreinfo > footer {
+	position: absolute;
+	bottom: 15px;
+}
+
+#moreinfo dl {
+	text-align: left;
+	overflow-y: scroll;
+	bottom: 50px;
+	margin: 0px 50px;
+	padding-left: 0;
+	padding-top: 50px;
+	padding-bottom: 20px;
+	border-bottom-left-radius: 10px 40px;
+	border-left: 3px solid #D3B2D9;
+	position: absolute;
+	top: 14.5em;
+	z-index: 9;
+	width: 390px;
+}
+
+#moreinfo dt {
+	font-weight: bold;
+	border-bottom: 1px solid #D3B2D9;
+	border-bottom-left-radius: 50px 10px;
+	border-bottom-right-radius: 30px 2px;
+	padding: 5px 10px 5px 20px;
+}
+
+#moreinfo dd {
+	margin: 0;
+	padding: 10px 10px 10px 20px;
+	font-size: 14px;
+}
+
+#gameinfo {
+	margin-top: 50px;
+	margin-bottom: -50px;
+	margin-left: 50%;
+	padding-left: 320px;
+	width: 300px;
+	height: 0;
+}
+
+#instructions {
+	margin-top: 140px;
+	margin-bottom: -70px;
+	margin-right: 50%;
+	padding-right: 320px;
+	margin-left: auto;
+	padding-left: 20px;
+	min-width: 300px;
+	height: 0;
+}
+
+#mapping {
+	margin: auto;
+	text-align: center;
+	border-spacing: 1px 5px;
+}
+
+#mapping td {
+	padding: 5px 23px;
+	display: table-cell;
+}
+
+#mapping td:first-child {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	padding-right: 10px;
+	border-right: 1px solid rgba(96, 48, 96, 0.8);
+}
+
+#mapping td:last-child {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left: 1px solid rgba(96, 48, 96, 0.8);
+}
+
+#sound, #controls label {
+	float: right;
+}
+
+#sound p {
+	margin: 0;
+}
+
+#btn-show-menu{
+    border: 1px solid #fff;
+    border-radius: 10px;
+    width: 50%;
+    padding: 10px;
+    margin: 0 auto;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+#select{
+    font-size:15px !important;padding:5px 10px !important;margin:0px
+}
+
+.menu-style{
+    margin: 0px !important;font-size: 15px !important;
+}
+
+.upload-save-btn{
+    font-size:15px !important;padding:5px 10px !important;margin:0px
+}
+
+.rl-btn{
+    width: 45%;
+    padding: 10px;
+    margin-top: 8px;
+    border: 1px solid #fff;
+    border-radius: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.move-btn{
+    width: 50%;
+    position: relative;
+    display:flex;justify-content:center;
+}
+
+.move-btn-item{
+    width: 50px;
+    height: 50px;
+    border: 1px solid;
+    border-radius: 50%;
+    line-height: 50px;
+    position: absolute;
+}
+
+.move-left{
+    left: 10px;
+    top: 60px;
+}
+
+.move-top{
+    left: 60px;
+    top: 10px;
+}
+
+.move-right{
+    left: 110px;
+    top: 60px;
+}
+
+.move-bottom{
+    top: 110px;
+    left: 60px;
+}
+
+.confirm-btn{
+    width:50%;
+    margin-top:60px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.confirm-btn-a{
+    width: 60px;
+    height: 60px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    line-height: 60px;
+    margin-left:20px;
+}
+
+.confirm-btn-b{
+    width: 60px;
+    height: 60px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    line-height: 60px;
+    margin-left:20px;
+}
+
+.move-btn-wrap{
+    position:relative;width:200px;/*height:150px;*/
+}
+
+
+.select-btn{
+    width: 80px;
+    margin-top:20px;
+    padding:5px 10px;
+    border:1px solid #fff;
+    border-radius: 10px;
+    margin-left:10px;
+}
+
+.select-btn-wrap{
+    display:flex;flex-direction:row;width:100%;margin-top:30px;justify-content:center;align-item:center
+}
+
+.action-btns{
+    display:flex;flex-direction:row;width:100%;margin-top:50px;
+}
+
+.lr-btn-wrap{
+    display:flex;flex-direction:row;width:100%;justify-content: center;align-items: center;margin-top: 5px;
+}
